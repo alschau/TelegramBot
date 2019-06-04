@@ -30,24 +30,35 @@ public class JamesBot extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
 
-        //System.out.println(update.getMessage().getText());
-        //System.out.println(update.getMessage().getFrom().getFirstName());
-
         String command = update.getMessage().getText();
+        Long chatid = update.getMessage().getChatId();
         User user = update.getMessage().getFrom();
         Person person = null;
-        for(Person personnes : persons){
-            if(personnes.getId() == user.getId()){
-                //kennst ihn
-                person = personnes;
-            }else{
-                //Kennst ihn nicht
-                person = new Person(user);
-                persons.add(person);
+
+        if (command == null)
+            return;
+        if (command.length() < 2)
+            return;
+
+        boolean hinzu = true;
+
+        for (Person s : persons) {
+            if (s.getId() == user.getId()) {
+                hinzu = false;
+                person = s;
+                break;
             }
         }
 
-        Long chatid = update.getMessage().getChatId();
+        System.out.println(command);
+
+        if (hinzu) {
+            person = new Person(user);
+            persons.add(person);
+        }
+        if (person.getUser() == null) {
+            person.setUser(user);
+        }
 
         if (command.equals("hello")) {
             sendNachrichtNorm("Hello"+ update.getMessage().getFrom().getFirstName() ,user.getId());
@@ -56,7 +67,7 @@ public class JamesBot extends TelegramLongPollingBot {
         if (command.equals("/join")) {
             if(player.contains(person)){
                 //bereits gejoint
-                sendNachrichtNorm("You've already joined the game", user.getId());
+                sendNachrichtNorm("You've already joined the Game.", user.getId());
             }else{
                 //Knnest ihn nicht
                 sendNachrichtNorm("Joining the game!", user.getId());
@@ -66,9 +77,11 @@ public class JamesBot extends TelegramLongPollingBot {
 
         if (command.equals("/chat")) {
             sendNachrichtNorm("Your Chat ID is: " + update.getMessage().getChatId(), user.getId());
-            sendNachrichtNorm("--------------", user.getId());
+            sendNachrichtNorm("-------GETTING ALL CHAT IDs-------", user.getId());
+            for(Person p : persons){
+                sendNachrichtNorm(Integer.toString(p.getId()), user.getId());
+            }
         }
-
 
         if (command.equals("/exit")) {
             if(player.contains(person)){
@@ -78,7 +91,7 @@ public class JamesBot extends TelegramLongPollingBot {
 
             }else{
                 //Kann nicht verlassen
-                sendNachrichtNorm("You can't exit because You haven't joined a game.", user.getId());
+                sendNachrichtNorm("You can't exit because You haven't joined a Game.", user.getId());
             }
         }
 
@@ -87,8 +100,13 @@ public class JamesBot extends TelegramLongPollingBot {
             sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName(),user.getId());
         }
 
-        if(command.equalsIgnoreCase("/start")){
-            Game game = new Game(person,"Frage");
+        if(command.equals("/start")){
+            for(Person p : player){
+                sendNachrichtNorm("Starting the Game!", p.getId());
+            }
+
+            //Game game = new Game(person,"Frage");
+
         }
 
         // Chat ID Aline: Long 265903135

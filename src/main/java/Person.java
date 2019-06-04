@@ -1,3 +1,4 @@
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.io.Serializable;
@@ -14,11 +15,10 @@ public class Person implements Serializable {
     User user;
     int id;
     int points = 0;
-    long privatchat = 0;
-    long groupchat = 0;
     long game = 0;
     long win = 0;
-    long lose = 0;
+    Boolean start = false;
+
     // Status für Check ob Spieler auf Telegram & in Game ist
     boolean status = false;
 
@@ -44,11 +44,6 @@ public class Person implements Serializable {
         long won = this.getWin();
         this.setWin(++won);
 
-    }
-
-    synchronized void lose(int betrag) {
-        long lost = this.getLose();
-        this.setLose(++lost);
     }
 
     public int getId(){
@@ -80,24 +75,15 @@ public class Person implements Serializable {
         return game;
     }
 
-    public void setGame(long black) {
-        this.game = black;
+    public void setGame(long game) {
+        this.game = game;
     }
 
     public long getWin() {
         return win;
     }
 
-    public void setWin(long bwin) {
-        this.win = bwin;
+    public void setWin(long win) {
+        this.win = win;
     }
-
-    public long getLose() {
-        return lose;
-    }
-
-    public void setLose(long blose) {
-        this.lose = blose;
-    }
-
 }
