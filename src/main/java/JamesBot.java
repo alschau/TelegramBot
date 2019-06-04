@@ -16,7 +16,6 @@ public class JamesBot extends TelegramLongPollingBot {
     String token = "565706184:AAFyo2oQdNbcc_RjDgo_0Oe1EPm4jBKnbsk";
     String name = "james13_bot";
     public boolean send = false;
-
     ArrayList<Game> games = new ArrayList<>();
     ArrayList<Person> persons = new ArrayList<>();
     ArrayList<Person> player = new ArrayList<>();
@@ -104,73 +103,15 @@ public class JamesBot extends TelegramLongPollingBot {
             for(Person p : player){
                 sendNachrichtNorm("Starting the Game!", p.getId());
             }
-
-            //Game game = new Game(person,"Frage");
-
+            for (Person p : player) {
+                Game game = new Game(player, p);
+            }
         }
-
         // Chat ID Aline: Long 265903135
         // Chat ID Marc: Long 748488681
         // Chat ID Ülkü: Long 754741889
-
     }
 
-    /*
-    int sendNachrichtUser(String nachricht, Person person) {
-        SendMessage TestNachricht = new SendMessage();
-        TestNachricht.enableMarkdown(true);
-        TestNachricht.setChatId(person.getUser().getId() + "");
-        TestNachricht.setText(nachricht);
-        try {
-            return sendMessage(TestNachricht).getMessageId();
-        } catch (Exception e) {
-            System.out.println(e);
-            sendNachrichtAdmin(e.toString());
-            if (e.toString().contains("retry after")) {
-                try {
-                    int time = Integer.parseInt(e.toString().split("after")[1]);
-                    SendMessage errMsg = new SendMessage();
-                    errMsg.enableMarkdown(true);
-                    errMsg.setChatId(person.getUser().getId() + "");
-                    errMsg.setText("Es gibt leider einen Telegram Alfsweep-Cooldown. Probiere es nochmal in " + time + " Sekunden!");
-                } catch (Exception e1) {
-                    sendNachrichtAdmin(e.toString());
-                }
-            }
-            //sendNachrichtNorm("Oh " + stu.getUser().getFirstName() + ", ich kann dir nicht schreiben! Bitte klicke hier:\n@Klassenbotbot\nGehe auf den Chat mit mir und drücke start.");
-        }
-        return -1;
-    }
-
-    void sendNachricht(String nachricht, long chatid) {
-        SendMessage TestNachricht = new SendMessage();
-        TestNachricht.enableMarkdown(true);
-        TestNachricht.setChatId(chatid + "");
-        TestNachricht.setText(nachricht);
-        try {
-            sendMessage(TestNachricht).getMessageId();
-        } catch (Exception e) {
-            sendNachrichtAdmin("Fehler beim normalen Nachrichten versenden:\n" + nachricht + "\n" + e.toString());
-        }
-    }
-
-    void sendNachrichtGroup(String nachricht) {
-        SendMessage TestNachricht = new SendMessage();
-        TestNachricht.enableMarkdown(true);
-        TestNachricht.setChatId(group + "");
-        TestNachricht.setText(nachricht);
-        try {
-            sendMessage(TestNachricht);
-        } catch (Exception e) {
-            sendNachrichtAdmin("`Fehler bei send to Group:`\n" + e.toString());
-        }
-    }
-
-
-
- }
-    }
-   */
     public String getBotUsername() {
         return this.name;
     }

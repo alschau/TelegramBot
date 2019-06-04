@@ -13,16 +13,48 @@ import java.util.Map;
 public class Game implements Serializable {
     private static final long serialVersionUID = 1L;
     Person person;
+    ArrayList<Person> player;
     String frage;
-    long start;
-    Map<String, Integer> antwort = new HashMap<>();
-    ArrayList<Person> player = new ArrayList<>();
+    Map<String, Person> antwort = new HashMap<>();
+    Map<String, Person> vote = new HashMap<>();
 
+    public Game(ArrayList player, Person startPerson) {
+        this.person = startPerson;
+        this.player = player;
+        System.out.println("Is this happening? - YES!!");
+        // Spielablauf
+        // 1: Get Question from Start Player
+        String q = question(this.person);
+        // 2: Get Answers from All (every User in ArrayList player)
+        for (Person p : this.player){
+            antwort.put(answer(p), p);
+        }
+    }
 
-    public Game(Person player, String frage) {
-        this.person = player;
-        this.frage = frage;
-        start = System.currentTimeMillis();
+    public synchronized String question(Person p) {
+        // Get Question from StartPerson
+        System.out.println("And this? - Yes!!");
+
+        // Start Player: Enter the Question:
+        // The Rest: Waiting for <name of start player> to enter the Question..
+
+        frage = getFrage();
+        return frage;
+    }
+
+    public synchronized String answer(Person person) {
+        // Get Answers from Everyone
+        String a = "A";
+        return a;
+    }
+
+    public synchronized void vote(Person p) {
+
+        //vote.put((String) vote.keySet().toArray()[], );
+    }
+
+    public synchronized void points() {
+        // ..Punkte zuteilen..
     }
 
     public Person getPerson() {
@@ -34,31 +66,11 @@ public class Game implements Serializable {
     }
 
     public String getFrage() {
-        return frage;
-    }
-
-    public Map<String, Integer> getAntwort() {
-        return antwort;
+        return "hello";
     }
 
 
     public ArrayList<Person> getPlayer() {
         return player;
     }
-
-    public synchronized void vote(int was, Person p) {
-        //player.add(p);
-        //antwort.put((String) antwort.keySet().toArray()[was - 1], (int) antwort.values().toArray()[was - 1] + 1);
-
-    }
-
-    public synchronized boolean delete() {
-        long elapsedTimeMillis = System.currentTimeMillis() - start;
-        float elapsedTimeMin = elapsedTimeMillis / (60 * 1000F);
-        float stunden = elapsedTimeMin / 60;
-        if (stunden >= 12)
-            return true;
-        return false;
-    }
-
 }
