@@ -11,19 +11,17 @@ import java.util.Map;
 
 
 public class Game implements Serializable {
-    //private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     Person person;
     String frage;
     long start;
-    //Map<String, Integer> antwort = new HashMap<>();
-    //ArrayList<Person> player = new ArrayList<>();
+    Map<String, Integer> antwort = new HashMap<>();
+    ArrayList<Person> player = new ArrayList<>();
 
-    /*
-    public Game(Person player, String frage, String[] antworten) {
+
+    public Game(Person player, String frage) {
         this.person = player;
         this.frage = frage;
-        for (int i = 0; i < antworten.length; i++)
-            antwort.put(antworten[i].trim(), 0);
         start = System.currentTimeMillis();
     }
 
@@ -51,6 +49,7 @@ public class Game implements Serializable {
     public synchronized void vote(int was, Person p) {
         //player.add(p);
         //antwort.put((String) antwort.keySet().toArray()[was - 1], (int) antwort.values().toArray()[was - 1] + 1);
+
     }
 
     public synchronized boolean delete() {
@@ -61,5 +60,5 @@ public class Game implements Serializable {
             return true;
         return false;
     }
-    */
+
 }

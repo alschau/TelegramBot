@@ -51,6 +51,9 @@ public class Person implements Serializable {
         this.setLose(++lost);
     }
 
+    public int getId(){
+        return id;
+    }
 
     // SETTERS & GETTERS
     public void setUser(User user) {
