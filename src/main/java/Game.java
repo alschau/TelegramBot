@@ -12,41 +12,80 @@ import java.util.Map;
 
 public class Game implements Serializable {
     private static final long serialVersionUID = 1L;
-    Person person;
+    Person fragesteller;
     ArrayList<Person> player;
-    String frage;
-    Map<String, Person> antwort = new HashMap<>();
-    Map<String, Person> vote = new HashMap<>();
+    String frage = "";
+    Map<Person,String> antworten = new HashMap<>();
+    Map<Person,String> vote = new HashMap<>();
+    JamesBot bot;
+    String masterantwort;
 
-    public Game(ArrayList player, Person startPerson) {
-        this.person = startPerson;
+    public Game(ArrayList<Person> player, Person startPerson, JamesBot bot) {
+        this.fragesteller = startPerson;
         this.player = player;
-        System.out.println("Is this happening? - YES!!");
+        this.bot = bot;
+
         // Spielablauf
         // 1: Get Question from Start Player
-        String q = question(this.person);
+        getFrage();
+
         // 2: Get Answers from All (every User in ArrayList player)
-        for (Person p : this.player){
-            antwort.put(answer(p), p);
+
+    }
+
+    public void getFrage() {
+        sendNachrichtAnPlayer("Das Spiel beginnt, " + fragesteller.getUser().getFirstName() + " überlegt sich schon die Frage!");
+        bot.sendNachrichtNorm("Deine Frage?", fragesteller.getId());
+        fragesteller.fragesteller = true;
+    }
+
+    public void sendNachrichtAnPlayer(String nachricht){
+        for (Person per : this.player) {
+            if (per.getId() != fragesteller.getId()) {
+                bot.sendNachrichtNorm(nachricht, per.getId());
+            }
         }
     }
 
-    public synchronized String question(Person p) {
-        // Get Question from StartPerson
-        System.out.println("And this? - Yes!!");
-
-        // Start Player: Enter the Question:
-        // The Rest: Waiting for <name of start player> to enter the Question..
-
-        frage = getFrage();
-        return frage;
+    public void sendNachrichtAnAlle(String nachricht){
+        for (Person per : this.player) {
+            bot.sendNachrichtNorm(nachricht,per.getId());
+        }
     }
 
-    public synchronized String answer(Person person) {
-        // Get Answers from Everyone
-        String a = "A";
-        return a;
+    public void addAntwort(String antwort, Person per){
+        this.antworten.put(per,antwort);
+        per.antworter = false;
+        if(this.antworten.size() == player.size() - 1){
+            sendNachrichtAnAlle("Alle haben ihre Antworten abgegeben!");
+            for(String stuff: this.antworten.values())
+                sendNachrichtAnAlle(stuff);
+            sendNachrichtAnAlle(masterantwort);
+        }
     }
+    public void setFrage(String Frage){
+        this.frage = Frage;
+        sendNachrichtAnAlle("Die Frage lautet:\n" + frage);
+        sendNachrichtAnPlayer("Was ist deine Antwort?");
+        for (Person per : this.player) {
+            if (per.getId() != fragesteller.getId()) {
+                per.antworter = true;
+            }
+        }
+        bot.sendNachrichtNorm("Wie lautet die richtige Antwort?", fragesteller.getId());
+
+    }
+
+    public void setMasterAntwort(String antwort){
+        fragesteller.fragesteller = false;
+        System.out.println(fragesteller.getUser().getFirstName());
+        System.out.println(antwort);
+        this.masterantwort = antwort;
+        System.out.println("Set!");
+    }
+
+
+
 
     public synchronized void vote(Person p) {
 
@@ -57,17 +96,15 @@ public class Game implements Serializable {
         // ..Punkte zuteilen..
     }
 
-    public Person getPerson() {
-        return person;
+    public Person getFragesteller() {
+        return fragesteller;
     }
 
-    public void setPerson(Person person) {
-        this.person = person;
+    public void setFragesteller(Person fragesteller) {
+        this.fragesteller = fragesteller;
     }
 
-    public String getFrage() {
-        return "hello";
-    }
+
 
 
     public ArrayList<Person> getPlayer() {

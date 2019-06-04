@@ -17,8 +17,9 @@ public class JamesBot extends TelegramLongPollingBot {
     String name = "james13_bot";
     public boolean send = false;
     ArrayList<Game> games = new ArrayList<>();
+    Game game;
     ArrayList<Person> persons = new ArrayList<>();
-    ArrayList<Person> player = new ArrayList<>();
+    public ArrayList<Person> player = new ArrayList<>();
 
     public JamesBot(String token, String name){
         this.token = token;
@@ -98,15 +99,26 @@ public class JamesBot extends TelegramLongPollingBot {
             System.out.println(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
             sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName(),user.getId());
         }
+        if(person.antworter && ! command.startsWith("/") ){
+            game.addAntwort(command.trim(),person);
+        }
+
+        if(person.fragesteller && ! command.startsWith("/")){
+            if(game.frage.equals(""))
+                game.setFrage(command.trim());
+            else
+                game.setMasterAntwort(command.trim());
+        }
 
         if(command.equals("/start")){
-            for(Person p : player){
+
+            for(Person p : player) {
                 sendNachrichtNorm("Starting the Game!", p.getId());
             }
-            for (Person p : player) {
-                Game game = new Game(player, p);
-            }
+            game = new Game(player, person, this);
+
         }
+
         // Chat ID Aline: Long 265903135
         // Chat ID Marc: Long 748488681
         // Chat ID Ülkü: Long 754741889
@@ -119,6 +131,7 @@ public class JamesBot extends TelegramLongPollingBot {
     public String getBotToken() {
         return this.token;
     }
+
 
     void sendNachrichtNorm(String nachricht,int chatid) {
         SendMessage TestNachricht = new SendMessage();

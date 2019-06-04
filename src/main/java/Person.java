@@ -17,8 +17,9 @@ public class Person implements Serializable {
     int points = 0;
     long game = 0;
     long win = 0;
-    Boolean start = false;
 
+    boolean fragesteller = false;
+    boolean antworter = false;
     // Status für Check ob Spieler auf Telegram & in Game ist
     boolean status = false;
 
