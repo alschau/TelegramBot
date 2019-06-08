@@ -20,8 +20,7 @@ public class Person implements Serializable {
 
     boolean fragesteller = false;
     boolean antworter = false;
-    // Status für Check ob Spieler auf Telegram & in Game ist
-    boolean status = false;
+    boolean voter = false;
 
     public Person(User user) {
         this.user = user;
@@ -44,7 +43,6 @@ public class Person implements Serializable {
     synchronized void win(int betrag) {
         long won = this.getWin();
         this.setWin(++won);
-
     }
 
     public int getId(){

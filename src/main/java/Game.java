@@ -1,7 +1,5 @@
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 //##########################################################################################
 //
@@ -15,22 +13,30 @@ public class Game implements Serializable {
     Person fragesteller;
     ArrayList<Person> player;
     String frage = "";
-    Map<Person,String> antworten = new HashMap<>();
-    Map<Person,String> vote = new HashMap<>();
+    ArrayList<Antwort> antworten = new ArrayList<>();
+
+    Map<Integer, Person> prepared = new HashMap<>();
+    Map<Person,Person> vote = new HashMap<>();
+
+
     JamesBot bot;
     String masterantwort;
+    Boolean readyToVote = false;
+
 
     public Game(ArrayList<Person> player, Person startPerson, JamesBot bot) {
         this.fragesteller = startPerson;
         this.player = player;
         this.bot = bot;
 
-        // Spielablauf
-        // 1: Get Question from Start Player
+        // Get Question from Start Player
         getFrage();
-
-        // 2: Get Answers from All (every User in ArrayList player)
-
+        if (masterantwort != null && this.antworten.size() == player.size()-1){
+            prepare();
+        }
+        if (readyToVote){
+            vote();
+        }
     }
 
     public void getFrage() {
@@ -54,15 +60,18 @@ public class Game implements Serializable {
     }
 
     public void addAntwort(String antwort, Person per){
-        this.antworten.put(per,antwort);
         per.antworter = false;
-        if(this.antworten.size() == player.size() - 1){
-            sendNachrichtAnAlle("Alle haben ihre Antworten abgegeben!");
-            for(String stuff: this.antworten.values())
-                sendNachrichtAnAlle(stuff);
-            sendNachrichtAnAlle(masterantwort);
+        per.voter = true;
+        Antwort ant = new Antwort(per, antwort, false);
+        antworten.add(ant);
+        if(this.antworten.size() == player.size()-1){
+            if (this.masterantwort != null){
+                sendNachrichtAnAlle("Alle haben ihre Antworten abgegeben!");
+                prepare();
+            }
         }
     }
+
     public void setFrage(String Frage){
         this.frage = Frage;
         sendNachrichtAnAlle("Die Frage lautet:\n" + frage);
@@ -73,26 +82,36 @@ public class Game implements Serializable {
             }
         }
         bot.sendNachrichtNorm("Wie lautet die richtige Antwort?", fragesteller.getId());
-
     }
 
-    public void setMasterAntwort(String antwort){
+    public void setMasterAntwort(String antwort, Person person){
         fragesteller.fragesteller = false;
         System.out.println(fragesteller.getUser().getFirstName());
         System.out.println(antwort);
         this.masterantwort = antwort;
+        Antwort ant = new Antwort(person, antwort,true);
+        antworten.add(ant);
         System.out.println("Set!");
     }
 
+    public void prepare(){
+        Collections.shuffle(antworten);
+        for (int i=0; i<this.antworten.size(); i++) {
+            antworten.get(i).setI(i);
+            sendNachrichtAnAlle(i + " - " + antworten.get(i).getAntwort());
+        }
+        readyToVote = true;
+    }
 
+    public void addVotes(int i, Person person){
 
+    }
 
-    public synchronized void vote(Person p) {
-
+    public void vote() {
         //vote.put((String) vote.keySet().toArray()[], );
     }
 
-    public synchronized void points() {
+    public void points() {
         // ..Punkte zuteilen..
     }
 
@@ -103,8 +122,6 @@ public class Game implements Serializable {
     public void setFragesteller(Person fragesteller) {
         this.fragesteller = fragesteller;
     }
-
-
 
 
     public ArrayList<Person> getPlayer() {

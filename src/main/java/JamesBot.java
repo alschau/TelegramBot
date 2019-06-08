@@ -17,6 +17,7 @@ public class JamesBot extends TelegramLongPollingBot {
     String name = "james13_bot";
     public boolean send = false;
     ArrayList<Game> games = new ArrayList<>();
+
     Game game;
     ArrayList<Person> persons = new ArrayList<>();
     public ArrayList<Person> player = new ArrayList<>();
@@ -37,7 +38,7 @@ public class JamesBot extends TelegramLongPollingBot {
 
         if (command == null)
             return;
-        if (command.length() < 2)
+        if (command.length() < 1)
             return;
 
         boolean hinzu = true;
@@ -99,15 +100,19 @@ public class JamesBot extends TelegramLongPollingBot {
             System.out.println(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
             sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName(),user.getId());
         }
+
+        // Getting the Questions and Answers from Everyone (Antworter and Fragesteller)
         if(person.antworter && ! command.startsWith("/") ){
             game.addAntwort(command.trim(),person);
+        } else if (person.voter && ! command.startsWith("/") && isNumeric(command)){
+            game.addVotes(command, person);
         }
 
         if(person.fragesteller && ! command.startsWith("/")){
             if(game.frage.equals(""))
                 game.setFrage(command.trim());
             else
-                game.setMasterAntwort(command.trim());
+                game.setMasterAntwort(command.trim(), person);
         }
 
         if(command.equals("/start")){
@@ -156,5 +161,16 @@ public class JamesBot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
+
+    // Helper function to check if String is a number
+    public static boolean isNumeric(String strNum) {
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException | NullPointerException nfe) {
+            return false;
+        }
+        return true;
+    }
+
 }
 
