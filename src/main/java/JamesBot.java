@@ -13,8 +13,8 @@ import java.util.ArrayList;
 
 public class JamesBot extends TelegramLongPollingBot {
     static final String Admin = "265903135";
-    String token = "565706184:AAFyo2oQdNbcc_RjDgo_0Oe1EPm4jBKnbsk";
-    String name = "james13_bot";
+    String token;
+    String name;
     public boolean send = false;
     ArrayList<Game> games = new ArrayList<>();
 
@@ -51,6 +51,12 @@ public class JamesBot extends TelegramLongPollingBot {
             }
         }
 
+        /*
+        if (persons.size()>1){
+            game.SetAntwortenReady = false;
+        }
+        */
+
         System.out.println(command);
 
         if (hinzu) {
@@ -65,26 +71,33 @@ public class JamesBot extends TelegramLongPollingBot {
             sendNachrichtNorm("Hello"+ update.getMessage().getFrom().getFirstName() ,user.getId());
         }
 
+        // Getting the Questions and Answers from Everyone (Antworter and Fragesteller)
+        if(person.antworter && ! command.startsWith("/") ){
+            game.addAntwort(command.trim(),person);
+        } else if (person.voter && ! command.startsWith("/") && isNumeric(command)){
+            Integer i = Integer.valueOf(command);
+            game.Vote(i, person);
+        }
+
+        if(person.fragesteller && ! command.startsWith("/")){
+            if(game.frage.equals(""))
+                game.setFrage(command.trim());
+            else
+                game.setMasterAntwort(command.trim(), person);
+        }
+
         if (command.equals("/join")) {
             if(player.contains(person)){
                 //bereits gejoint
                 sendNachrichtNorm("You've already joined the Game.", user.getId());
             }else{
-                //Knnest ihn nicht
+                //kennst ihn nicht
                 sendNachrichtNorm("Joining the game!", user.getId());
                 player.add(person);
             }
         }
 
-        if (command.equals("/chat")) {
-            sendNachrichtNorm("Your Chat ID is: " + update.getMessage().getChatId(), user.getId());
-            sendNachrichtNorm("-------GETTING ALL CHAT IDs-------", user.getId());
-            for(Person p : persons){
-                sendNachrichtNorm(Integer.toString(p.getId()), user.getId());
-            }
-        }
-
-        if (command.equals("/exit")) {
+        if (command.equals("/leave")) {
             if(player.contains(person)){
                 //Spiel verlassen
                 sendNachrichtNorm("Leaving the Game!", user.getId());
@@ -96,27 +109,7 @@ public class JamesBot extends TelegramLongPollingBot {
             }
         }
 
-        if (command.equals("/name")) {
-            System.out.println(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
-            sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName(),user.getId());
-        }
-
-        // Getting the Questions and Answers from Everyone (Antworter and Fragesteller)
-        if(person.antworter && ! command.startsWith("/") ){
-            game.addAntwort(command.trim(),person);
-        } else if (person.voter && ! command.startsWith("/") && isNumeric(command)){
-            game.addVotes(command, person);
-        }
-
-        if(person.fragesteller && ! command.startsWith("/")){
-            if(game.frage.equals(""))
-                game.setFrage(command.trim());
-            else
-                game.setMasterAntwort(command.trim(), person);
-        }
-
         if(command.equals("/start")){
-
             for(Person p : player) {
                 sendNachrichtNorm("Starting the Game!", p.getId());
             }
@@ -124,9 +117,25 @@ public class JamesBot extends TelegramLongPollingBot {
 
         }
 
-        // Chat ID Aline: Long 265903135
-        // Chat ID Marc: Long 748488681
-        // Chat ID Ülkü: Long 754741889
+        if(command.equals("/end")){
+            for(Person per : player){
+                sendNachrichtNorm("The Game is Over!", per.getId());
+                // Show stats (personal stats)
+                // Reset everything (maybe keep amount of wins)
+                // End the Game..
+            }
+        }
+
+        if (command.equals("/stats")) {
+            for(Person p : player){
+                sendNachrichtNorm("Statistics: ", p.getId());
+            }
+        }
+
+        if (command.equals("/name")) {
+            System.out.println(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+            sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName(),user.getId());
+        }
     }
 
     public String getBotUsername() {

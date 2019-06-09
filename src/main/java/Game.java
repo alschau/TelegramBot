@@ -13,14 +13,13 @@ public class Game implements Serializable {
     Person fragesteller;
     ArrayList<Person> player;
     String frage = "";
+    Integer votes = 0;
     ArrayList<Antwort> antworten = new ArrayList<>();
-
-    Map<Integer, Person> prepared = new HashMap<>();
-    Map<Person,Person> vote = new HashMap<>();
-
+    ArrayList<Person> rankingList = new ArrayList<>();
 
     JamesBot bot;
-    String masterantwort;
+    Antwort masterantwort;
+
     Boolean readyToVote = false;
 
 
@@ -32,10 +31,7 @@ public class Game implements Serializable {
         // Get Question from Start Player
         getFrage();
         if (masterantwort != null && this.antworten.size() == player.size()-1){
-            prepare();
-        }
-        if (readyToVote){
-            vote();
+            shuffleAndSend();
         }
     }
 
@@ -64,10 +60,10 @@ public class Game implements Serializable {
         per.voter = true;
         Antwort ant = new Antwort(per, antwort, false);
         antworten.add(ant);
-        if(this.antworten.size() == player.size()-1){
+        if(antworten.size() == player.size()){
             if (this.masterantwort != null){
                 sendNachrichtAnAlle("Alle haben ihre Antworten abgegeben!");
-                prepare();
+                shuffleAndSend();
             }
         }
     }
@@ -88,31 +84,74 @@ public class Game implements Serializable {
         fragesteller.fragesteller = false;
         System.out.println(fragesteller.getUser().getFirstName());
         System.out.println(antwort);
-        this.masterantwort = antwort;
         Antwort ant = new Antwort(person, antwort,true);
+        this.masterantwort = ant;
         antworten.add(ant);
         System.out.println("Set!");
+        if (this.antworten.size() == player.size()){
+            shuffleAndSend();
+        }
     }
 
-    public void prepare(){
+    public void shuffleAndSend(){
         Collections.shuffle(antworten);
         for (int i=0; i<this.antworten.size(); i++) {
             antworten.get(i).setI(i);
             sendNachrichtAnAlle(i + " - " + antworten.get(i).getAntwort());
         }
+        sendNachrichtAnPlayer("Please Vote! \n Enter a number.");
         readyToVote = true;
     }
 
-    public void addVotes(int i, Person person){
-
+    public void Vote(int i, Person person){
+        bot.sendNachrichtNorm("Okay", person.getId());
+        person.voter = false;
+        votes++;
+        for (Antwort ant : this.antworten){
+            if (i == ant.getI()){
+                System.out.println(ant.isMaster());
+                if (ant.isMaster()){
+                    person.addPoints();
+                    ant.addVoter(person);
+                    System.out.println(person.getUser().getFirstName() + " chose wisely!");
+                } else {
+                    ant.getPerson().addPoints();
+                    ant.addVoter(person);
+                    System.out.println(person.getUser().getFirstName() + " has been fooled!");
+                }
+            }
+        }
+        ranking();
+        if (votes == this.antworten.size() -1){
+            fools();
+        }
     }
 
-    public void vote() {
-        //vote.put((String) vote.keySet().toArray()[], );
+    public void fools() {
+        for (Antwort ant : this.antworten){
+            if(!ant.isMaster() && ant.getMyVoters().size()!=0) {
+                bot.sendNachrichtNorm("You have fooled: ", ant.getPerson().getId());
+                for (Person person : ant.getMyVoters()) {
+                    bot.sendNachrichtNorm(person.user.getFirstName(), ant.getPerson().getId());
+                }
+            } else if (ant.isMaster()){
+                bot.sendNachrichtNorm("List of Correct guesses: ", ant.getPerson().getId());
+                for (Person person : ant.getMyVoters()) {
+                    bot.sendNachrichtNorm(person.user.getFirstName(), ant.getPerson().getId());
+                }
+            }
+        }
     }
 
-    public void points() {
-        // ..Punkte zuteilen..
+    public void ranking(){
+        if (rankingList.size() == 0){
+            for (Person person : player){
+                rankingList.add(person);
+            }
+            // Sort by person.getPoints BUBBLE SORT
+        } else {
+            //update ranking
+        }
     }
 
     public Person getFragesteller() {

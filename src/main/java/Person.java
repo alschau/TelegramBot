@@ -25,7 +25,6 @@ public class Person implements Serializable {
     public Person(User user) {
         this.user = user;
         this.id = user.getId();
-        this.setPoints(points);
     }
 
     public User getUser() {
@@ -54,8 +53,8 @@ public class Person implements Serializable {
         this.user = user;
     }
 
-    public void setPoints(int points) {
-        this.points = points;
+    public void addPoints() {
+        this.points++;
     }
 
     public int getPoints() {
@@ -67,7 +66,7 @@ public class Person implements Serializable {
     }
 
     void reset(){
-        this.setPoints(0);
+        this.points = 0;
     }
 
     public long getGame() {

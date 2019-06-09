@@ -5,20 +5,22 @@ public class Antwort {
     private int i;
     private Person person;
     private String antwort;
-    private boolean ismaster =false;
+    private boolean master =false;
     private Integer votes = 0;
-    private ArrayList<Person> myVoters;
+    private ArrayList<Person> myVoters = new ArrayList<>();
 
-    public Antwort(Person person, String antwort,boolean ismaster){
-        this.i = i;
+    public Antwort(Person person, String antwort,boolean master){
         this.person = person;
         this.antwort = antwort;
-        this.ismaster = ismaster;
+        this.master = master;
     }
 
-    public void voting(Person person){
-
+    public void addVoter(Person person){
+        myVoters.add(person);
+        votes++;
     }
+
+    public Boolean isMaster() { return master; }
 
     public int getI() {
         return i;
@@ -43,4 +45,6 @@ public class Antwort {
     public void setAntwort(String s){
         this.antwort = s;
     }
+
+    public ArrayList<Person> getMyVoters(){return myVoters;}
 }
