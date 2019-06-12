@@ -10,25 +10,32 @@ import java.util.*;
 
 public class Game implements Serializable {
     private static final long serialVersionUID = 1L;
+
     Person fragesteller;
     ArrayList<Person> player;
     String frage = "";
     Integer votes = 0;
     ArrayList<Antwort> antworten = new ArrayList<>();
-    ArrayList<Person> rankingList = new ArrayList<>();
+    Person[] rankings = new Person[20];
 
     JamesBot bot;
     Antwort masterantwort;
 
     Boolean readyToVote = false;
 
+    ArrayList<String> correct = new ArrayList<String>();
+    ArrayList<String> wrong = new ArrayList<String>();
+
 
     public Game(ArrayList<Person> player, Person startPerson, JamesBot bot) {
+        correctFill();
+        wrongFill();
         this.fragesteller = startPerson;
         this.player = player;
         this.bot = bot;
-
-        // Get Question from Start Player
+        for (int i=0; i<player.size(); i++){
+            rankings[i]=player.get(i);
+        }
         getFrage();
         if (masterantwort != null && this.antworten.size() == player.size()-1){
             shuffleAndSend();
@@ -99,59 +106,153 @@ public class Game implements Serializable {
             antworten.get(i).setI(i);
             sendNachrichtAnAlle(i + " - " + antworten.get(i).getAntwort());
         }
-        sendNachrichtAnPlayer("Please Vote! \n Enter a number.");
+        sendNachrichtAnPlayer("Zeit für die Abstimmung! \n Gib die Nummer der Antwort ein, für die Du stimmst.");
         readyToVote = true;
     }
 
     public void Vote(int i, Person person){
-        bot.sendNachrichtNorm("Okay", person.getId());
         person.voter = false;
         votes++;
         for (Antwort ant : this.antworten){
             if (i == ant.getI()){
-                System.out.println(ant.isMaster());
                 if (ant.isMaster()){
-                    person.addPoints();
+                    person.addPointsRichtig();
                     ant.addVoter(person);
                     System.out.println(person.getUser().getFirstName() + " chose wisely!");
                 } else {
-                    ant.getPerson().addPoints();
-                    ant.addVoter(person);
+                    if (person != ant.getPerson()) {
+                        ant.getPerson().addPointsVerarsche();
+                    }
                     System.out.println(person.getUser().getFirstName() + " has been fooled!");
+                    ant.addVoter(person);
                 }
             }
         }
-        ranking();
+        ranking(rankings);
         if (votes == this.antworten.size() -1){
-            fools();
+            checkAnswers();
         }
     }
 
-    public void fools() {
+    public void checkAnswers() {
         for (Antwort ant : this.antworten){
+            // Voters von Antworten
             if(!ant.isMaster() && ant.getMyVoters().size()!=0) {
-                bot.sendNachrichtNorm("You have fooled: ", ant.getPerson().getId());
-                for (Person person : ant.getMyVoters()) {
-                    bot.sendNachrichtNorm(person.user.getFirstName(), ant.getPerson().getId());
+                if (ant.getMyVoters().size()==1 && ant.getMyVoters().get(0) == ant.getPerson()){
+                    bot.sendNachrichtNorm("Dumm, dümmer, "+ant.getPerson().getUser().getFirstName()+".", ant.getPerson().getId());
                 }
+                if (ant.getMyVoters().size() >1) {
+                    bot.sendNachrichtNorm("Du hast diese Personen verarscht: ", ant.getPerson().getId());
+                    for (Person person : ant.getMyVoters()) {
+                        if (person != ant.getPerson()) {
+                            bot.sendNachrichtNorm(person.user.getFirstName(), ant.getPerson().getId());
+                            // choose random string from wrong and send to that person
+                            String str = getWrong();
+                            String strName = str.replace("£", person.getUser().getFirstName());
+                            bot.sendNachrichtNorm(strName, person.getId());
+                        } else {
+                            bot.sendNachrichtNorm("Dich selber du Genie", ant.getPerson().getId());
+                        }
+                    }
+                }
+
+            // Voters von MasterAntwort
             } else if (ant.isMaster()){
-                bot.sendNachrichtNorm("List of Correct guesses: ", ant.getPerson().getId());
-                for (Person person : ant.getMyVoters()) {
-                    bot.sendNachrichtNorm(person.user.getFirstName(), ant.getPerson().getId());
+                switch (ant.getMyVoters().size()){
+                    case 0:
+                        bot.sendNachrichtNorm("Niemand wusste die Antwort!", ant.getPerson().getId());
+                        break;
+                    case 1:
+                        bot.sendNachrichtNorm("Nur "+ant.getMyVoters().get(0).getUser().getFirstName()+
+                                " Wusste die Antwort.", ant.getPerson().getId());
+                        String str1 = getCorrect();
+                        String strName1 = str1.replace("£", ant.getMyVoters().get(0).getUser().getFirstName());
+                        bot.sendNachrichtNorm(strName1, ant.getMyVoters().get(0).getUser().getId());
+                        break;
+                    default:
+                        bot.sendNachrichtNorm("Diese Personen haben richtig geantwortet: ", ant.getPerson().getId());
+                        for (Person person : ant.getMyVoters()) {
+                            bot.sendNachrichtNorm(person.user.getFirstName(), ant.getPerson().getId());
+                            // choose random string from correct and send to person
+                            String str = getCorrect();
+                            String strName = str.replace("£", person.getUser().getFirstName());
+                            bot.sendNachrichtNorm(strName, person.getId());
+                        }
                 }
             }
         }
     }
 
-    public void ranking(){
-        if (rankingList.size() == 0){
-            for (Person person : player){
-                rankingList.add(person);
+    public void ranking(Person[] l){
+        sort(l);
+    }
+
+    public void sort(Person[] rankingList) {
+        int n = rankingList.length;
+        for (int i = 0; i < n - 1; i++) {
+            if (rankingList[i]!= null) {
+                for (int j = 0; j < n - i - 1; j++) {
+                    if (rankingList[j]!= null && rankingList[j+1] != null){
+                        if (rankingList[j].getPoints() < rankingList[j + 1].getPoints()) {
+                            Person temp = rankingList[j];
+                            rankingList[j] = rankingList[j + 1];
+                            rankingList[j + 1] = temp;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                break;
             }
-            // Sort by person.getPoints BUBBLE SORT
-        } else {
-            //update ranking
         }
+    }
+
+    public void correctFill(){
+        correct.add("Richtig");
+        correct.add("Hurra, das war richtig! \uD83D\uDE0E");
+        correct.add("Top! Weiter so.");
+        correct.add("Richtig, dir macht keiner was vor.");
+        correct.add("Ausgezeichnete Arbeit.");
+        correct.add("£, du bist spitze!");
+        correct.add("Mach weiter so.");
+        correct.add("Absolut korrekt.");
+        correct.add("100 Punkte für Gryffindor!");
+        correct.add("Richtig, £ du bist der King.");
+        correct.add("Du kleiner Sherlock Holmes \uD83D\uDD0D");
+        correct.add("Du bist schlau wie ein Rotfuchs.");
+        correct.add("Right");
+        correct.add("c'était juste, mon ami.");
+        correct.add("Super weiter so.");
+        correct.add("Das gibt dir weitere 2 Punkte.");
+        correct.add("Du bist Gold wert.");
+    }
+    public void wrongFill(){
+        wrong.add("Falsch");
+        wrong.add("Leider falsch, das geht noch besser.");
+        wrong.add("Das war die falsche Antwort.");
+        wrong.add("Knapp daneben ist auch vorbei.");
+        wrong.add("Aber £, das kannst doch unmöglich stimmen.");
+        wrong.add("Da hat dir wohl jemand einen Bären aufgebunden.");
+        wrong.add("£, du wurdest schon wieder in die irre geleitet.");
+        wrong.add("Tut mir leid, du wurdest überlistet.");
+        wrong.add("Hattest du in der Schule einen Fensterplatz?");
+        wrong.add("NAME, benutz dein Kopf!");
+        wrong.add("\uD83D\uDCA9");
+        wrong.add("Tja, vielleicht hast du nächstes mal mehr glück.");
+        wrong.add("£, das war falsch.");
+        wrong.add("Hätte sein können, stimmt aber nicht.");
+        wrong.add("Sorry £, aber das war peinlich.");
+    }
+
+    public String getCorrect(){
+        Collections.shuffle(correct);
+        return correct.get(0);
+    }
+
+    public String getWrong(){
+        Collections.shuffle(wrong);
+        return wrong.get(0);
     }
 
     public Person getFragesteller() {

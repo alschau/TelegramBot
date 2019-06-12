@@ -9,7 +9,7 @@ public class Antwort {
     private Integer votes = 0;
     private ArrayList<Person> myVoters = new ArrayList<>();
 
-    public Antwort(Person person, String antwort,boolean master){
+    public Antwort(Person person, String antwort, boolean master){
         this.person = person;
         this.antwort = antwort;
         this.master = master;

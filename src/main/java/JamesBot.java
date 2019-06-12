@@ -127,14 +127,21 @@ public class JamesBot extends TelegramLongPollingBot {
         }
 
         if (command.equals("/stats")) {
-            for(Person p : player){
-                sendNachrichtNorm("Statistics: ", p.getId());
+            sendNachrichtNorm("Sterne: "+person.getSterne(), person.getId());
+            sendNachrichtNorm("Ranking: ", person.getId());
+            for(int i=0; i<game.rankings.length; i++){
+                if (game.rankings[i] != null) {
+                    sendNachrichtNorm(i + ": " + game.rankings[i].getUser().getFirstName() + " - "
+                            + game.rankings[i].getPoints() + " Points", person.getId());
+                }
             }
         }
 
         if (command.equals("/name")) {
-            System.out.println(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
-            sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName(),user.getId());
+            System.out.println(update.getMessage().getFrom().getFirstName() + " " +
+                    update.getMessage().getFrom().getLastName());
+            sendNachrichtNorm(update.getMessage().getFrom().getFirstName() + " " +
+                    update.getMessage().getFrom().getLastName(),user.getId());
         }
     }
 

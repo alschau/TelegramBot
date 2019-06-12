@@ -15,6 +15,8 @@ public class Person implements Serializable {
     User user;
     int id;
     int points = 0;
+    int verarschigspünkt = 0;
+    int sterne = 0;
     long game = 0;
     long win = 0;
 
@@ -53,8 +55,13 @@ public class Person implements Serializable {
         this.user = user;
     }
 
-    public void addPoints() {
-        this.points++;
+    public void addPointsRichtig() {
+        this.points+=2;
+    }
+
+    public void addPointsVerarsche() {
+        this.points+=3;
+        this.sterne++;
     }
 
     public int getPoints() {
@@ -72,6 +79,8 @@ public class Person implements Serializable {
     public long getGame() {
         return game;
     }
+
+    public int getSterne() {return sterne;}
 
     public void setGame(long game) {
         this.game = game;
