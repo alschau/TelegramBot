@@ -21,7 +21,7 @@ public class Game implements Serializable {
     JamesBot bot;
     Antwort masterantwort;
 
-    Boolean readyToVote = false;
+    public Boolean readyToVote = false;
 
     ArrayList<String> correct = new ArrayList<String>();
     ArrayList<String> wrong = new ArrayList<String>();
@@ -226,6 +226,10 @@ public class Game implements Serializable {
         correct.add("Super weiter so.");
         correct.add("Das gibt dir weitere 2 Punkte.");
         correct.add("Du bist Gold wert.");
+        correct.add("Easy Peasy Lemon Squeezy");
+        correct.add("Oida stimmt!");
+        correct.add("Schummelt da wer oder bist du einfach so gut?");
+
     }
     public void wrongFill(){
         wrong.add("Falsch");

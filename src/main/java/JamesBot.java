@@ -1,9 +1,12 @@
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 //##########################################################################################
 //
@@ -67,14 +70,11 @@ public class JamesBot extends TelegramLongPollingBot {
             person.setUser(user);
         }
 
-        if (command.equals("hello")) {
-            sendNachrichtNorm("Hello"+ update.getMessage().getFrom().getFirstName() ,user.getId());
-        }
-
         // Getting the Questions and Answers from Everyone (Antworter and Fragesteller)
         if(person.antworter && ! command.startsWith("/") ){
             game.addAntwort(command.trim(),person);
         } else if (person.voter && ! command.startsWith("/") && isNumeric(command)){
+
             Integer i = Integer.valueOf(command);
             game.Vote(i, person);
         }
@@ -86,18 +86,24 @@ public class JamesBot extends TelegramLongPollingBot {
                 game.setMasterAntwort(command.trim(), person);
         }
 
-        if (command.equals("/join")) {
+
+        if (command.equals("hello")) {
+            sendNachrichtNorm("Hello"+ update.getMessage().getFrom().getFirstName() ,user.getId());
+        }
+
+        if (command.equals("/join") || command.equalsIgnoreCase("join")) {
             if(player.contains(person)){
                 //bereits gejoint
-                sendNachrichtNorm("You've already joined the Game.", user.getId());
+                sendNachricht("You've already joined the Game.", person);
             }else{
                 //kennst ihn nicht
-                sendNachrichtNorm("Joining the game!", user.getId());
+
                 player.add(person);
+                sendNachricht("Joining the game!", person);
             }
         }
 
-        if (command.equals("/leave")) {
+        if (command.equals("/leave") || command.equalsIgnoreCase("exit")) {
             if(player.contains(person)){
                 //Spiel verlassen
                 sendNachrichtNorm("Leaving the Game!", user.getId());
@@ -109,11 +115,15 @@ public class JamesBot extends TelegramLongPollingBot {
             }
         }
 
-        if(command.equals("/start")){
-            for(Person p : player) {
-                sendNachrichtNorm("Starting the Game!", p.getId());
+        if(command.equals("/start") || command.equalsIgnoreCase("start")){
+            if(!player.contains(person))
+                sendNachricht("Willkommen bei \"Nobody\'s perfect\" " + person.getUser().getFirstName(),person);
+            else {
+                for (Person p : player) {
+                    sendNachricht("Starting the Game!", p);
+                }
+                game = new Game(player, person, this);
             }
-            game = new Game(player, person, this);
 
         }
 
@@ -163,6 +173,43 @@ public class JamesBot extends TelegramLongPollingBot {
             execute(TestNachricht);
         } catch (Exception e) {
             sendNachrichtAdmin("`Fehler bei send to Norm:`\n" + e.toString());
+        }
+    }
+
+    void sendNachricht(String nachricht,Person p) {
+        SendMessage TestNachricht = new SendMessage();
+        ReplyKeyboardMarkup back = new ReplyKeyboardMarkup();
+        TestNachricht.enableMarkdown(true);
+        TestNachricht.setChatId(p.getId()+"");
+        String item = getItems(p);
+        String[] buttonArray = item.split(",");
+        java.util.List<KeyboardRow> commands = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.addAll(Arrays.asList(buttonArray));
+        commands.add(row);
+        back.setResizeKeyboard(true);
+        back.setOneTimeKeyboard(false);
+        back.setKeyboard(commands);
+        back.setSelective(true);
+        TestNachricht.setReplyMarkup(back);
+        TestNachricht.setText(nachricht.replaceAll("(?=[]\\[+|`'{}^_~*\\\\])", "\\\\"));
+        try {
+            execute(TestNachricht);
+        } catch (Exception e) {
+
+        }
+    }
+    public String getItems(Person p) {
+        if(!player.contains(p))
+            return "Join";
+        else if(!p.voter)
+            return "Exit,Start";
+        else{
+            String back = "1";
+            for(int i = 2; i<player.size();i++){
+                back += ","+i;
+            }
+            return back;
         }
     }
 

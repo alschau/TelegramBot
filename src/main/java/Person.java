@@ -15,7 +15,6 @@ public class Person implements Serializable {
     User user;
     int id;
     int points = 0;
-    int verarschigspünkt = 0;
     int sterne = 0;
     long game = 0;
     long win = 0;
