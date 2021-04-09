@@ -18,7 +18,7 @@ public class Game implements Serializable {
     ArrayList<Antwort> antworten = new ArrayList<>();
     Person[] rankings = new Person[20];
 
-    JamesBot bot;
+    PlinioBot bot;
     Antwort masterantwort;
 
     public Boolean readyToVote = false;
@@ -27,7 +27,7 @@ public class Game implements Serializable {
     ArrayList<String> wrong = new ArrayList<String>();
 
 
-    public Game(ArrayList<Person> player, Person startPerson, JamesBot bot) {
+    public Game(ArrayList<Person> player, Person startPerson, PlinioBot bot) {
         correctFill();
         wrongFill();
         this.fragesteller = startPerson;
@@ -36,17 +36,13 @@ public class Game implements Serializable {
         for (int i=0; i<player.size(); i++){
             rankings[i]=player.get(i);
         }
-        getFrage();
+
         if (masterantwort != null && this.antworten.size() == player.size()-1){
             shuffleAndSend();
         }
     }
 
-    public void getFrage() {
-        sendNachrichtAnPlayer("Das Spiel beginnt, " + fragesteller.getUser().getFirstName() + " überlegt sich schon die Frage!");
-        bot.sendNachrichtNorm("Deine Frage?", fragesteller.getId());
-        fragesteller.fragesteller = true;
-    }
+
 
     public void sendNachrichtAnPlayer(String nachricht){
         for (Person per : this.player) {
@@ -62,43 +58,11 @@ public class Game implements Serializable {
         }
     }
 
-    public void addAntwort(String antwort, Person per){
-        per.antworter = false;
-        per.voter = true;
-        Antwort ant = new Antwort(per, antwort, false);
-        antworten.add(ant);
-        if(antworten.size() == player.size()){
-            if (this.masterantwort != null){
-                sendNachrichtAnAlle("Alle haben ihre Antworten abgegeben!");
-                shuffleAndSend();
-            }
-        }
-    }
 
-    public void setFrage(String Frage){
-        this.frage = Frage;
-        sendNachrichtAnAlle("Die Frage lautet:\n" + frage);
-        sendNachrichtAnPlayer("Was ist deine Antwort?");
-        for (Person per : this.player) {
-            if (per.getId() != fragesteller.getId()) {
-                per.antworter = true;
-            }
-        }
-        bot.sendNachrichtNorm("Wie lautet die richtige Antwort?", fragesteller.getId());
-    }
 
-    public void setMasterAntwort(String antwort, Person person){
-        fragesteller.fragesteller = false;
-        System.out.println(fragesteller.getUser().getFirstName());
-        System.out.println(antwort);
-        Antwort ant = new Antwort(person, antwort,true);
-        this.masterantwort = ant;
-        antworten.add(ant);
-        System.out.println("Set!");
-        if (this.antworten.size() == player.size()){
-            shuffleAndSend();
-        }
-    }
+
+
+
 
     public void shuffleAndSend(){
         Collections.shuffle(antworten);
@@ -110,29 +74,7 @@ public class Game implements Serializable {
         readyToVote = true;
     }
 
-    public void Vote(int i, Person person){
-        person.voter = false;
-        votes++;
-        for (Antwort ant : this.antworten){
-            if (i == ant.getI()){
-                if (ant.isMaster()){
-                    person.addPointsRichtig();
-                    ant.addVoter(person);
-                    System.out.println(person.getUser().getFirstName() + " chose wisely!");
-                } else {
-                    if (person != ant.getPerson()) {
-                        ant.getPerson().addPointsVerarsche();
-                    }
-                    System.out.println(person.getUser().getFirstName() + " has been fooled!");
-                    ant.addVoter(person);
-                }
-            }
-        }
-        ranking(rankings);
-        if (votes == this.antworten.size() -1){
-            checkAnswers();
-        }
-    }
+
 
     public void checkAnswers() {
         for (Antwort ant : this.antworten){
@@ -183,30 +125,8 @@ public class Game implements Serializable {
         }
     }
 
-    public void ranking(Person[] l){
-        sort(l);
-    }
 
-    public void sort(Person[] rankingList) {
-        int n = rankingList.length;
-        for (int i = 0; i < n - 1; i++) {
-            if (rankingList[i]!= null) {
-                for (int j = 0; j < n - i - 1; j++) {
-                    if (rankingList[j]!= null && rankingList[j+1] != null){
-                        if (rankingList[j].getPoints() < rankingList[j + 1].getPoints()) {
-                            Person temp = rankingList[j];
-                            rankingList[j] = rankingList[j + 1];
-                            rankingList[j + 1] = temp;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            } else {
-                break;
-            }
-        }
-    }
+
 
     public void correctFill(){
         correct.add("Richtig");

@@ -1,12 +1,17 @@
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 //##########################################################################################
 //
@@ -14,21 +19,19 @@ import java.util.Arrays;
 //
 //##########################################################################################
 
-public class JamesBot extends TelegramLongPollingBot {
+public class PlinioBot extends TelegramLongPollingBot {
     static final String Admin = "265903135";
     String token;
     String name;
-    public boolean send = false;
-    ArrayList<Game> games = new ArrayList<>();
-
-    Game game;
+    public boolean locked = true;
     ArrayList<Person> persons = new ArrayList<>();
     public ArrayList<Person> player = new ArrayList<>();
 
-    public JamesBot(String token, String name){
+    public PlinioBot(String token, String name){
         this.token = token;
         this.name = name;
-        sendNachrichtAdmin("James steht Ihnen zu Diensten!");
+        sendNachrichtAdmin("Buenvenutti nel Casa Plinio!");
+
     }
 
 
@@ -44,64 +47,82 @@ public class JamesBot extends TelegramLongPollingBot {
         if (command.length() < 1)
             return;
 
-        boolean hinzu = true;
-
         for (Person s : persons) {
             if (s.getId() == user.getId()) {
-                hinzu = false;
                 person = s;
                 break;
             }
         }
 
-        /*
-        if (persons.size()>1){
-            game.SetAntwortenReady = false;
-        }
-        */
-
-        System.out.println(command);
-
-        if (hinzu) {
-            person = new Person(user);
-            persons.add(person);
-        }
-        if (person.getUser() == null) {
-            person.setUser(user);
-        }
-
-        // Getting the Questions and Answers from Everyone (Antworter and Fragesteller)
-        if(person.antworter && ! command.startsWith("/") ){
-            game.addAntwort(command.trim(),person);
-        } else if (person.voter && ! command.startsWith("/") && isNumeric(command)){
-
-            Integer i = Integer.valueOf(command);
-            game.Vote(i, person);
-        }
-
-        if(person.fragesteller && ! command.startsWith("/")){
-            if(game.frage.equals(""))
-                game.setFrage(command.trim());
-            else
-                game.setMasterAntwort(command.trim(), person);
-        }
 
 
-        if (command.equals("hello")) {
-            sendNachrichtNorm("Hello"+ update.getMessage().getFrom().getFirstName() ,user.getId());
-        }
+        if(locked){
+            sendNachrichtNorm("Enter Password:", user.getId());
+            if(command.equals("che")){
+                locked = false;
+            }
+        } else {
 
-        if (command.equals("/join") || command.equalsIgnoreCase("join")) {
-            if(player.contains(person)){
-                //bereits gejoint
-                sendNachricht("You've already joined the Game.", person);
-            }else{
-                //kennst ihn nicht
+            System.out.println(command);
 
-                player.add(person);
-                sendNachricht("Joining the game!", person);
+            if (command.equals("/start")) {
+                sendNachrichtNorm("Buenvenutti nel Casa Plinio!", user.getId());
+
+                SendPhoto msg = new SendPhoto().setChatId(chatid).setPhoto("https://im4.ezgif.com/tmp/ezgif-4-1933bc61c091.png").setCaption("");
+                try {
+                    this.execute(msg);
+                    ; // Call method to send the photo
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+
+                SendMessage message = new SendMessage() // Create a message object object
+                        .setChatId(chatid)
+                        .setText("Please choose one of the following options:");
+                // Create ReplyKeyboardMarkup object
+                ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+                // Create the keyboard (list of keyboard rows)
+                List<KeyboardRow> keyboard = new ArrayList<>();
+                // Create a keyboard row
+                KeyboardRow row = new KeyboardRow();
+                // Set each button, you can also use KeyboardButton objects if you need something else than text
+                row.add("Welcome Guide");
+                row.add("Before leaving");
+                // Add the first row to the keyboard
+                keyboard.add(row);
+                // Create another keyboard row
+                row = new KeyboardRow();
+                // Set each button for the second line
+                row.add("Drinks");
+                row.add("Else");
+                // Add the second row to the keyboard
+                keyboard.add(row);
+                // Set the keyboard to the markup
+                keyboardMarkup.setKeyboard(keyboard);
+                // Add it to the message
+                message.setReplyMarkup(keyboardMarkup);
+                try {
+                    execute(message); // Sending our message object to user
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            List<String> hello = Arrays.asList("Hello", "hello", "hi", "Hi", "ciao", "Ciao");
+            if (hello.contains(command)) {
+                sendNachrichtNorm("Hello, " + update.getMessage().getFrom().getFirstName(), user.getId());
+            }
+
+            if (command.equals("/Drinks")) {
+                System.out.println("es lauft!!");
             }
         }
+
+
+
+// #########################################################################################
+
+
 
         if (command.equals("/leave") || command.equalsIgnoreCase("exit")) {
             if(player.contains(person)){
@@ -115,17 +136,6 @@ public class JamesBot extends TelegramLongPollingBot {
             }
         }
 
-        if(command.equals("/start") || command.equalsIgnoreCase("start")){
-            if(!player.contains(person))
-                sendNachricht("Willkommen bei \"Nobody\'s perfect\" " + person.getUser().getFirstName(),person);
-            else {
-                for (Person p : player) {
-                    sendNachricht("Starting the Game!", p);
-                }
-                game = new Game(player, person, this);
-            }
-
-        }
 
         if(command.equals("/end")){
             for(Person per : player){
@@ -136,16 +146,6 @@ public class JamesBot extends TelegramLongPollingBot {
             }
         }
 
-        if (command.equals("/stats")) {
-            sendNachrichtNorm("Sterne: "+person.getSterne(), person.getId());
-            sendNachrichtNorm("Ranking: ", person.getId());
-            for(int i=0; i<game.rankings.length; i++){
-                if (game.rankings[i] != null) {
-                    sendNachrichtNorm(i + ": " + game.rankings[i].getUser().getFirstName() + " - "
-                            + game.rankings[i].getPoints() + " Points", person.getId());
-                }
-            }
-        }
 
         if (command.equals("/name")) {
             System.out.println(update.getMessage().getFrom().getFirstName() + " " +
@@ -161,6 +161,18 @@ public class JamesBot extends TelegramLongPollingBot {
 
     public String getBotToken() {
         return this.token;
+    }
+
+    public String getItems(Person p) {
+        if(!player.contains(p))
+            return "Join";
+        else{
+            String back = "1";
+            for(int i = 2; i<player.size();i++){
+                back += ","+i;
+            }
+            return back;
+        }
     }
 
 
@@ -199,19 +211,7 @@ public class JamesBot extends TelegramLongPollingBot {
 
         }
     }
-    public String getItems(Person p) {
-        if(!player.contains(p))
-            return "Join";
-        else if(!p.voter)
-            return "Exit,Start";
-        else{
-            String back = "1";
-            for(int i = 2; i<player.size();i++){
-                back += ","+i;
-            }
-            return back;
-        }
-    }
+
 
     void sendNachrichtAdmin(String nachricht) {
         SendMessage TestNachricht = new SendMessage();

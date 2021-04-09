@@ -14,14 +14,7 @@ import java.util.TreeMap;
 public class Person implements Serializable {
     User user;
     int id;
-    int points = 0;
-    int sterne = 0;
-    long game = 0;
-    long win = 0;
 
-    boolean fragesteller = false;
-    boolean antworter = false;
-    boolean voter = false;
 
     public Person(User user) {
         this.user = user;
@@ -35,16 +28,6 @@ public class Person implements Serializable {
             return null;
     }
 
-    synchronized void game() {
-        long game = this.getGame();
-        this.setGame(++game);
-    }
-
-    synchronized void win(int betrag) {
-        long won = this.getWin();
-        this.setWin(++won);
-    }
-
     public int getId(){
         return id;
     }
@@ -54,42 +37,5 @@ public class Person implements Serializable {
         this.user = user;
     }
 
-    public void addPointsRichtig() {
-        this.points+=2;
-    }
 
-    public void addPointsVerarsche() {
-        this.points+=3;
-        this.sterne++;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    public String getPointsString() {
-        return points + " Points";
-    }
-
-    void reset(){
-        this.points = 0;
-    }
-
-    public long getGame() {
-        return game;
-    }
-
-    public int getSterne() {return sterne;}
-
-    public void setGame(long game) {
-        this.game = game;
-    }
-
-    public long getWin() {
-        return win;
-    }
-
-    public void setWin(long win) {
-        this.win = win;
-    }
 }
